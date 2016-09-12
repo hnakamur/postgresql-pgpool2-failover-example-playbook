@@ -10,7 +10,8 @@ container_names: "{{ containers | map(attribute='name') | list }}"
 
 # NOTE: postgresql_master_nodename must be the same as name of one of containers
 postgresql_master_nodename: pgsql1
-postgresql_master_vip: 10.155.92.100
+postgresql_master_vip_cidr: 10.155.92.100/24
+postgresql_master_vip: "{{ postgresql_master_vip_cidr | ipaddr('address') }}"
 postgresql_replication_allow_cidr: 10.155.92.0/24
 postgresql_major_dot_minor_version: "9.5"
 postgresql_major_minor_version: "{{ postgresql_major_dot_minor_version | replace('.', '') }}"
@@ -19,16 +20,23 @@ postgresql_repo_rpm_url: http://yum.postgresql.org/{{ postgresql_major_dot_minor
 postgresql_repo_rpm_path: "{{ postgresql_download_dir }}/{{ postgresql_repo_rpm_url | basename }}"
 postgresql_prefix_dir: /usr/pgsql-{{ postgresql_major_dot_minor_version }}
 postgresql_bin_dir: "{{ postgresql_prefix_dir }}/bin"
-postgresql_pid_dir: /var/run/postgresql
+postgresql_run_dir: /var/run/postgresql
+postgresql_socket_dir: "{{ postgresql_run_dir }}"
 postgresql_port: 5432
+postgresql_postgres_password: "{{ development.secrets.postgresql_postgres_password }}"
+postgresql_postgres_md5_password: md5{{ (postgresql_postgres_password + 'postgres') | hash('md5')}}
 postgresql_replication_user: repl_user
 postgresql_replication_password: "{{ development.secrets.postgresql_replication_password }}"
 postgresql_postgres_ssh_private_key: "{{ development.secrets.postgresql_postgres_ssh_private_key }}"
 postgresql_postgres_ssh_public_key: "{{ development.secrets.postgresql_postgres_ssh_public_key }}"
+postgresql_self_ipaddr: "{{ (containers | selectattr('name', 'equalto', inventory_hostname_short) | list)[0].addr_cidr | ipaddr('address') }}"
 
+pgpool2_allow_cidr: "{{ postgresql_replication_allow_cidr }}"
+pgpool2_prefix_dir: /usr/pgpool-{{ postgresql_major_dot_minor_version }}
 pgpool2_etc_dir: "/etc/pgpool-II-{{ postgresql_major_minor_version }}"
 pgpool2_run_dir: "/var/run/pgpool-II-{{ postgresql_major_minor_version }}"
 pgpool2_pid_file_name: "{{ pgpool2_run_dir }}/pgpool.pid"
+pgpool2_socket_dir: "{{ postgresql_socket_dir }}"
 pgpool2_log_dir: '/var/log/pgpool-II-{{ postgresql_major_minor_version }}'
 pgpool2_admin_user: pgpool2
 pgpool2_admin_password: "{{ development.secrets.pgpool2_admin_password }}"
@@ -37,3 +45,5 @@ pgpool2_health_check_period: 5
 pgpool2_health_check_timeout: 0
 # NOTE: The default value of pgpool2_wd_interval was 10 seconds
 pgpool2_wd_interval: 3
+# NOTE: Set pgpool2_log_statement to "on" only when debugging setup
+pgpool2_log_statement: "on"

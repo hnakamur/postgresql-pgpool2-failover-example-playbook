@@ -22,10 +22,11 @@
 - name: Fetch ssh public key
   fetch: src=/etc/ssh/ssh_host_ed25519_key.pub dest=roles/postgresql/files/ssh_host_ed25519_key-{{ inventory_hostname_short }}.pub flat=yes
 
-- name: Set peer node name
+- name: Set peer node name and ipaddr
   set_fact:
     postgresql_peer_nodename: "{{ (container_names | reject('equalto', inventory_hostname_short) | list)[0] }}"
     postgresql_peer_ipaddr: "{{ (containers | rejectattr('name', 'equalto', inventory_hostname_short) | list)[0].addr_cidr | ipaddr('address') }}"
+    postgresql_self_ipaddr: "{{ (containers | selectattr('name', 'equalto', inventory_hostname_short) | list)[0].addr_cidr | ipaddr('address') }}"
 
 - name: Set peer node ssh public key content
   set_fact:

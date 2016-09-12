@@ -1,0 +1,4 @@
+standby_mode = 'on'
+primary_conninfo = 'host={{ postgresql_peer_ipaddr }} port={{ postgresql_port }} user={{ postgresql_replication_user }} application_name={{ inventory_hostname_short }} keepalives_idle=60 keepalives_interval=5 keepalives_count=5'
+restore_command = 'scp {{ postgresql_peer_ipaddr }}:{{ postgresql_archive_dir }}/%f %p'
+recovery_target_timeline = 'latest'

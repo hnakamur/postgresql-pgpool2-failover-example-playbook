@@ -24,14 +24,14 @@
 
 # - pgpool Connection Settings -
 
-listen_addresses = 'localhost'
+listen_addresses = '*'
                                    # Host name or IP address to listen on:
                                    # '*' for all, '' for no TCP/IP connections
                                    # (change requires restart)
 port = 9999
                                    # Port number
                                    # (change requires restart)
-socket_dir = '{{ pgpool2_run_dir }}'
+socket_dir = '{{ pgpool2_socket_dir }}'
                                    # Unix domain socket path
                                    # The Debian package defaults to
                                    # /var/run/postgresql
@@ -47,7 +47,7 @@ pcp_listen_addresses = '*'
 pcp_port = 9898
                                    # Port number for pcp
                                    # (change requires restart)
-pcp_socket_dir = '{{ pgpool2_run_dir }}'
+pcp_socket_dir = '{{ pgpool2_socket_dir }}'
                                    # Unix domain socket path for pcp
                                    # The Debian package defaults to
                                    # /var/run/postgresql
@@ -63,15 +63,17 @@ serialize_accept = off
 # - Backend Connection Settings -
 
 {% for container in containers %}
-backend_hostname{{ loop.index0 }} = '{{ container.addr_cidr | ipaddr("address") }}'
+#backend_hostname{{ loop.index0 }} = '{{ container.addr_cidr | ipaddr("address") }}'
+backend_hostname{{ loop.index0 }} = '{{ container.name }}'
                                    # Host name or IP address to connect to for backend {{ loop.index0 }}
 backend_port{{ loop.index0 }} = {{ postgresql_port }}
                                    # Port number for backend {{ loop.index0 }}
 backend_weight{{ loop.index0 }} = 1
                                    # Weight for backend {{ loop.index0 }} (only in load balancing mode)
-backend_data_directory{{ loop.index0 }} = '{{ postgresql_data_dira }}'
+backend_data_directory{{ loop.index0 }} = '{{ postgresql_data_dir }}'
                                    # Data directory for backend {{ loop.index0 }}
-backend_flag{{ loop.index0 }} = 'ALLOW_TO_FAILOVER'
+#backend_flag{{ loop.index0 }} = 'ALLOW_TO_FAILOVER'
+backend_flag{{ loop.index0 }} = 'DISALLOW_TO_FAILOVER'
                                    # Controls various backend behavior
                                    # ALLOW_TO_FAILOVER or DISALLOW_TO_FAILOVER
 
@@ -79,7 +81,7 @@ backend_flag{{ loop.index0 }} = 'ALLOW_TO_FAILOVER'
 
 # - Authentication -
 
-enable_pool_hba = off
+enable_pool_hba = on
                                    # Use pool_hba.conf for client authentication
 pool_passwd = 'pool_passwd'
                                    # File name of pool_passwd for md5 authentication.
@@ -153,14 +155,14 @@ log_destination = 'stderr'
 
 log_line_prefix = '%t: pid %p: '   # printf-style string to output at beginning of each log line.
 
-log_connections = off
+log_connections = on
                                    # Log connections
-log_hostname = off
+log_hostname = on
                                    # Hostname will be shown in ps status
                                    # and in logs if connections are logged
-log_statement = off
+log_statement = {{ pgpool2_log_statement }}
                                    # Log all statements
-log_per_node_statement = off
+log_per_node_statement = on
                                    # Log all statements
                                    # with node and backend informations
 log_standby_delay = 'if_over_threshold'
@@ -178,7 +180,7 @@ syslog_ident = 'pgpool'
 
 # - Debug -
 
-debug_level = 0
+debug_level = 1
                                    # Debug message verbosity level
                                    # 0 means no message, 1 or more mean verbose
 
@@ -250,7 +252,7 @@ replicate_select = off
                                    # replicate_select is higher priority than
                                    # load_balance_mode.
 
-insert_lock = off
+insert_lock = on
                                    # Automatically locks a dummy row or a table
                                    # with INSERT statements to keep SERIAL data
                                    # consistency
@@ -281,7 +283,7 @@ failover_if_affected_tuples_mismatch = off
 # LOAD BALANCING MODE
 #------------------------------------------------------------------------------
 
-load_balance_mode = on
+load_balance_mode = off
                                    # Activate load balancing mode
                                    # (change requires restart)
 ignore_leading_white_space = on
@@ -328,11 +330,12 @@ master_slave_sub_mode = 'stream'
 sr_check_period = 10
                                    # Streaming replication check period
                                    # Disabled (0) by default
-sr_check_user = 'nobody'
+#sr_check_user = 'nobody'
+sr_check_user = 'postgres'
                                    # Streaming replication check user
                                    # This is neccessary even if you disable streaming
                                    # replication delay check by sr_check_period = 0
-sr_check_password = ''
+sr_check_password = '{{ postgresql_postgres_password }}'
                                    # Password for streaming replication check user
 sr_check_database = 'postgres'
                                    # Database name for streaming replication check
@@ -368,9 +371,10 @@ health_check_period = {{ pgpool2_health_check_period }}
 health_check_timeout = {{ pgpool2_health_check_timeout }}
                                    # Health check timeout
                                    # 0 means no timeout
-health_check_user = 'nobody'
+#health_check_user = 'nobody'
+health_check_user = 'postgres'
                                    # Health check user
-health_check_password = ''
+health_check_password = '{{ postgresql_postgres_password }}'
                                    # Password for health check user
 health_check_database = ''
                                    # Database name for health check. If '', tries 'postgres' frist, 
@@ -434,9 +438,10 @@ search_primary_node_timeout = 10
 # ONLINE RECOVERY
 #------------------------------------------------------------------------------
 
-recovery_user = 'nobody'
+#recovery_user = 'nobody'
+recovery_user = 'postgres'
                                    # Online recovery user
-recovery_password = ''
+recovery_password = '{{ postgresql_postgres_password }}'
                                    # Online recovery password
 recovery_1st_stage_command = ''
                                    # Executes a command in first stage
@@ -477,6 +482,7 @@ ping_path = '/bin'
 
 # - Watchdog communication Settings -
 
+#wd_hostname = '{{ postgresql_self_ipaddr }}'
 wd_hostname = '{{ inventory_hostname_short }}'
                                     # Host name or IP address of this watchdog
                                     # (change requires restart)
@@ -491,7 +497,7 @@ wd_authkey = ''
                                     # Authentication key for watchdog communication
                                     # (change requires restart)
 
-wd_ipc_socket_dir = '{{ pgpool2_run_dir }}'
+wd_ipc_socket_dir = '{{ pgpool2_socket_dir }}'
 									# Unix domain socket path for watchdog IPC socket
 									# The Debian package defaults to
 									# /var/run/postgresql
@@ -504,19 +510,19 @@ delegate_IP = '{{ postgresql_master_vip }}'
                                     # delegate IP address
                                     # If this is empty, virtual IP never bring up. 
                                     # (change requires restart)
-if_cmd_path = '/sbin'
+if_cmd_path = '{{ postgresql_postgres_home_dir }}/sbin'
                                     # path to the directory where if_up/down_cmd exists 
                                     # (change requires restart)
-if_up_cmd = 'ip addr add $_IP_$/24 dev eth0 label eth0:0'
+if_up_cmd = 'ip addr add {{ postgresql_master_vip_cidr }} dev eth0 label eth0:0'
                                     # startup delegate IP command
                                     # (change requires restart)
-if_down_cmd = 'ip addr del $_IP_$/24 dev eth0'
+if_down_cmd = 'ip addr del {{ postgresql_master_vip_cidr }} dev eth0'
                                     # shutdown delegate IP command
                                     # (change requires restart)
-arping_path = '/usr/sbin'
+arping_path = '{{ postgresql_postgres_home_dir }}/sbin'
                                     # arping command path
                                     # (change requires restart)
-arping_cmd = 'arping -U $_IP_$ -w 1'
+arping_cmd = 'arping -U {{ postgresql_master_vip }} -w 1'
                                     # arping command
                                     # (change requires restart)
 
@@ -564,24 +570,23 @@ wd_heartbeat_keepalive = 2
 wd_heartbeat_deadtime = 30
                                     # Deadtime interval for heartbeat signal (sec)
                                     # (change requires restart)
-{% for container in containers %}
-heartbeat_destination{{ loop.index0 }} = '{{ container.addr_cidr | ipaddr("address") }}'
+#heartbeat_destination0 = '{{ postgresql_peer_ipaddr }}'
+heartbeat_destination0 = '{{ postgresql_peer_nodename }}'
                                     # Host name or IP address of destination 0
                                     # for sending heartbeat signal.
                                     # (change requires restart)
-heartbeat_destination_port{{ loop.index0 }} = 9694 
+heartbeat_destination_port0 = 9694 
                                     # Port number of destination 0 for sending
                                     # heartbeat signal. Usually this is the
                                     # same as wd_heartbeat_port.
                                     # (change requires restart)
-heartbeat_device{{ loop.index0 }} = ''
+heartbeat_device0 = ''
                                     # Name of NIC device (such like 'eth0')
                                     # used for sending/receiving heartbeat
                                     # signal to/from destination 0.
                                     # This works only when this is not empty
                                     # and pgpool has root privilege.
                                     # (change requires restart)
-{% endfor %}
 
 # -- query mode --
 
@@ -603,13 +608,14 @@ wd_lifecheck_password = ''
 
 # - Other pgpool Connection Settings -
 
-#other_pgpool_hostname0 = 'host0'
+#other_pgpool_hostname0 = '{{ postgresql_peer_ipaddr }}'
+other_pgpool_hostname0 = '{{ postgresql_peer_nodename }}'
                                     # Host name or IP address to connect to for other pgpool 0
                                     # (change requires restart)
-#other_pgpool_port0 = 5432
+other_pgpool_port0 = 9999
                                     # Port number for othet pgpool 0
                                     # (change requires restart)
-#other_wd_port0 = 9000
+other_wd_port0 = 9000
                                     # Port number for othet watchdog 0
                                     # (change requires restart)
 #other_pgpool_hostname1 = 'host1'

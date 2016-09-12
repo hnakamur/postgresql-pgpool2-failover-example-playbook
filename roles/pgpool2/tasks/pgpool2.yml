@@ -1,18 +1,35 @@
 ---
+- name: Write /etc/hosts
+  template: src=hosts.j2 dest=/etc/hosts
+
 - name: Install pgpool-II
   yum: name={{ item }} state=present
   with_items:
     - pgpool-II-95
+    - pgpool-II-95-extensions
     - pgpoolAdmin
 
 - name: Create pgpool-II directories
   file: path={{ item }} state=directory owner=postgres group=postgres mode=0755
   with_items:
+    - "{{ postgresql_postgres_home_dir }}/sbin"
     - "{{ pgpool2_run_dir }}"
     - "{{ pgpool2_log_dir }}"
 
+- name: Copy and setuid ip and arping commands
+  copy: src=/sbin/{{ item }} dest={{ postgresql_postgres_home_dir }}/sbin/{{ item }} remote_src=yes owner=root group=root mode=04111
+  with_items:
+    - ip
+    - arping
+
+- name: Create pgpool-II pool_passwd
+  template: src=pool_passwd.j2 dest={{ pgpool2_etc_dir }}/pool_passwd owner=root group=root mode=0644
+
 - name: Create pgpool-II pcp.conf
-  template: src=pcp.conf.j2 dest={{ pgpool2_etc_dir }}/pcp.conf owner=postgres group=postgres mode=0644
+  template: src=pcp.conf.j2 dest={{ pgpool2_etc_dir }}/pcp.conf owner=root group=root mode=0644
+
+- name: Create pgpool-II pool_hba.conf
+  template: src=pool_hba.conf.j2 dest={{ pgpool2_etc_dir }}/pool_hba.conf owner=root group=root mode=0644
 
 - name: Create pgpool-II pgpool.conf
-  template: src=pgpool.conf.j2 dest={{ pgpool2_etc_dir }}/pgpool.conf owner=postgres group=postgres mode=0644
+  template: src=pgpool.conf.j2 dest={{ pgpool2_etc_dir }}/pgpool.conf owner=root group=root mode=0644

@@ -23,6 +23,7 @@
           # my customized options
           listen_addresses = '*'
           port = {{ postgresql_port }}
+          unix_socket_directories = '{{ postgresql_socket_dir }}'
           logging_collector = on
           archive_mode = on
           archive_command = 'cp %p {{ postgresql_archive_dir }}/%f'
@@ -40,6 +41,7 @@
 
           # pgpool-II config
           pgpool.pg_ctl = '{{ postgresql_bin_dir }}/pg_ctl'
+      # synchronous_standby_names = ''
       # NOTE: Use become_user here so that backup file is created with that user
       become: true
       become_user: postgres
@@ -50,13 +52,19 @@
       when: not postgresql_master_db_st.stat.exists
 
     - name: Create insert_lock table in PostgreSQL template1 database for pgpool-II
-      command: "{{ postgresql_bin_dir }}/psql -f {{ postgresql_prefix_dir }}/share/pgpool-II/insert_lock.sql template1"
+      command: "{{ postgresql_bin_dir }}/psql -f {{ pgpool2_prefix_dir }}/share/pgpool-II/insert_lock.sql template1"
       become: true
       become_user: postgres
       when: not postgresql_master_db_st.stat.exists
 
     - name: Install pgpool_recovery extention in PostgreSQL template1 database for pgpool-II
       command: "{{ postgresql_bin_dir }}/psql -f {{ postgresql_prefix_dir }}/share/extension/pgpool-recovery.sql template1"
+      become: true
+      become_user: postgres
+      when: not postgresql_master_db_st.stat.exists
+
+    - name: Set password for postgres user
+      postgresql_user: name=postgres password={{ postgresql_postgres_password }} state=present
       become: true
       become_user: postgres
       when: not postgresql_master_db_st.stat.exists
@@ -83,10 +91,29 @@
       become: true
       become_user: postgres
       when: not postgresql_standby_db_st.stat.exists
+
+    - name: Create recovery.conf in PostgreSQL standby
+      template: src=recovery.conf.j2 dest={{ postgresql_data_dir }}/recovery.conf owner=postgres group=postgres mode=0644
+      when: not postgresql_standby_db_st.stat.exists
   when: "{{ postgresql_is_standby_node }}"
 
 - name: Start and enable PostgreSQL service
-  service: name=postgresql-{{ postgresql_major_dot_minor_version }} state=stopped enabled=false
+  service: name=postgresql-{{ postgresql_major_dot_minor_version }} state=started enabled=true
 
-- name: Start and enable pgpool-II service
-  service: name=pgpool-II-{{ postgresql_major_minor_version }} state=stopped enabled=false
+- name: Start and enable pgpool-II service at master node first
+  service: name=pgpool-II-{{ postgresql_major_minor_version }} state=started enabled=true
+  run_once: true
+  delegate_to: "{{ postgresql_master_nodename }}"
+
+- name: Wait until vitual IP is attached at master node
+  command: ip a show eth0
+  register: postgresql_db_vip_result
+  until: 'postgresql_db_vip_result.stdout.find("inet {{ postgresql_master_vip_cidr }}") != -1'
+  retries: 6
+  delay: 5
+  run_once: true
+  delegate_to: "{{ postgresql_master_nodename }}"
+
+- name: Start and enable pgpool-II service at master standby first
+  service: name=pgpool-II-{{ postgresql_major_minor_version }} state=started enabled=true
+  when: "{{ postgresql_is_standby_node }}"
