@@ -1,0 +1,6 @@
+---
+- name: Install pgpool-II
+  yum: name={{ item }} state=present
+  with_items:
+    - pgpool-II-95
+    - pgpoolAdmin

@@ -1,0 +1,4 @@
+---
+- include: pgpool2.yml
+  tags:
+    - pgpool2

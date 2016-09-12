@@ -1,0 +1,6 @@
+[development]
+pgsql1
+pgsql2
+
+[development:vars]
+ansible_connection = lxd

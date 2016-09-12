@@ -1,0 +1,27 @@
+---
+containers:
+  - name: pgsql1
+    addr_cidr: 10.155.92.101/24
+  - name: pgsql2
+    addr_cidr: 10.155.92.102/24
+container_gateway: 10.155.92.1
+container_dns: 10.155.92.1
+container_names: "{{ containers | map(attribute='name') | list }}"
+
+# NOTE: postgresql_master_nodename must be the same as name of one of containers
+postgresql_master_nodename: pgsql1
+postgresql_master_vip: 10.155.92.100
+postgresql_replication_allow_cidr: 10.155.92.0/24
+postgresql_major_dot_minor_version: "9.5"
+postgresql_major_minor_version: "{{ postgresql_major_dot_minor_version | replace('.', '') }}"
+postgresql_download_dir: /usr/local/downloads
+postgresql_repo_rpm_url: http://yum.postgresql.org/{{ postgresql_major_dot_minor_version }}/redhat/rhel-7-x86_64/pgdg-centos95-{{ postgresql_major_dot_minor_version }}-2.noarch.rpm
+postgresql_repo_rpm_path: "{{ postgresql_download_dir }}/{{ postgresql_repo_rpm_url | basename }}"
+postgresql_prefix_dir: /usr/pgsql-{{ postgresql_major_dot_minor_version }}
+postgresql_bin_dir: "{{ postgresql_prefix_dir }}/bin"
+postgresql_pid_dir: /var/run/postgresql
+postgresql_port: 5432
+postgresql_replication_user: repl_user
+postgresql_replication_password: "{{ development.secrets.postgresql_replication_password }}"
+postgresql_postgres_ssh_private_key: "{{ development.secrets.postgresql_postgres_ssh_private_key }}"
+postgresql_postgres_ssh_public_key: "{{ development.secrets.postgresql_postgres_ssh_public_key }}"
