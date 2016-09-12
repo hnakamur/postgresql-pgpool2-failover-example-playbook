@@ -1,0 +1,4 @@
+---
+- include: postgresql_db.yml
+  tags:
+    - postgresql_db

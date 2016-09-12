@@ -3,3 +3,4 @@
   roles:
     - postgresql
     - pgpool2
+    - postgresql_db
