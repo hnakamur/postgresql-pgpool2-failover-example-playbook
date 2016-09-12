@@ -1,0 +1,33 @@
+#!/bin/bash -x
+set -eu
+
+PGDATA=$1
+REMOTE_HOST=$2
+REMOTE_PGDATA=$3
+
+PORT={{ postgresql_port }}
+ARCHIVE_DIR={{ postgresql_archive_dir }}
+
+rm  -rf $ARCHIVE_DIR/*
+
+ssh -T postgres@$REMOTE_HOST "
+#rm -rf $REMOTE_PGDATA
+mv $REMOTE_PGDATA $REMOTE_PGDATA.`date +%Y-%m-%d-%H-%M-%S`
+{{ postgresql_bin_dir }}/pg_basebackup -h {{ postgresql_self_ipaddr }} -U {{ postgresql_replication_user }} -D $REMOTE_PGDATA -x -c fast
+rm -f $REMOTE_PGDATA/trigger"
+
+ssh -T postgres@$REMOTE_HOST "rm -rf $ARCHIVE_DIR/*" 
+ssh -T postgres@$REMOTE_HOST "mkdir -p $REMOTE_PGDATA/pg_xlog/archive_status" 
+
+ssh -T postgres@$REMOTE_HOST "
+cd $REMOTE_PGDATA;
+cp postgresql.conf postgresql.conf.bak;
+sed -e 's/#*hot_standby = off/hot_standby = on/' postgresql.conf.bak > postgresql.conf;
+rm -f postgresql.conf.bak;
+cat > recovery.conf << EOT
+standby_mode = 'on'
+primary_conninfo = 'host="{{ postgresql_self_ipaddr }}" port=$PORT user={{ postgresql_replication_user }}'
+restore_command = 'scp {{ postgresql_self_ipaddr }}:$ARCHIVE_DIR/%f %p'
+trigger_file = '$PGDATA/trigger'
+EOT
+"

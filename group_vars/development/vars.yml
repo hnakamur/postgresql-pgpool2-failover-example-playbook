@@ -21,6 +21,7 @@ postgresql_repo_rpm_path: "{{ postgresql_download_dir }}/{{ postgresql_repo_rpm_
 postgresql_prefix_dir: /usr/pgsql-{{ postgresql_major_dot_minor_version }}
 postgresql_bin_dir: "{{ postgresql_prefix_dir }}/bin"
 postgresql_run_dir: /var/run/postgresql
+postgresql_pid_filename: "{{ postgresql_run_dir }}/postgresql.pid"
 postgresql_socket_dir: "{{ postgresql_run_dir }}"
 postgresql_port: 5432
 postgresql_postgres_password: "{{ development.secrets.postgresql_postgres_password }}"
@@ -47,3 +48,6 @@ pgpool2_health_check_timeout: 0
 pgpool2_wd_interval: 3
 # NOTE: Set pgpool2_log_statement to "on" only when debugging setup
 pgpool2_log_statement: "on"
+pgpool2_failover_command_path: /usr/local/sbin/failover.sh
+pgpool2_recovery_1st_stage_command_path: /usr/local/sbin/recovery_1st_stage.sh
+pgpool2_pgpool_remote_start_path: /usr/local/sbin/pgpool_remote_start.sh

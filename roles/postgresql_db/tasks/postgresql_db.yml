@@ -1,4 +1,13 @@
 ---
+- name: Copy failover.sh
+  template: src=failover.sh.j2 dest={{ pgpool2_failover_command_path }} owner=root group=root mode=0755
+
+- name: Copy recovery_1st_stage.sh
+  template: src=recovery_1st_stage.sh.j2 dest={{ pgpool2_recovery_1st_stage_command_path }} owner=root group=root mode=0755
+
+- name: Copy pgpool_remote_start.sh
+  template: src=pgpool_remote_start.sh.j2 dest={{ pgpool2_pgpool_remote_start_path }} owner=root group=root mode=0755
+
 - block:
     - name: Check PostgreSQL master database exists
       stat: path={{ postgresql_data_dir }}/PG_VERSION
@@ -21,6 +30,7 @@
         state: present
         block: |
           # my customized options
+          external_pid_file = '{{ postgresql_pid_filename }}'
           listen_addresses = '*'
           port = {{ postgresql_port }}
           unix_socket_directories = '{{ postgresql_socket_dir }}'

@@ -1,0 +1,8 @@
+#!/bin/sh
+set -eu
+
+REMOTE_HOST=$1
+REMOTE_PGDATA=$2
+
+ssh -T postgres@$REMOTE_HOST "
+{{ postgresql_bin_dir }}/pg_ctl -w -D $REMOTE_PGDATA start 2>&1 | logger --journald &"

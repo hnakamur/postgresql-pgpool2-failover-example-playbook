@@ -72,8 +72,7 @@ backend_weight{{ loop.index0 }} = 1
                                    # Weight for backend {{ loop.index0 }} (only in load balancing mode)
 backend_data_directory{{ loop.index0 }} = '{{ postgresql_data_dir }}'
                                    # Data directory for backend {{ loop.index0 }}
-#backend_flag{{ loop.index0 }} = 'ALLOW_TO_FAILOVER'
-backend_flag{{ loop.index0 }} = 'DISALLOW_TO_FAILOVER'
+backend_flag{{ loop.index0 }} = 'ALLOW_TO_FAILOVER'
                                    # Controls various backend behavior
                                    # ALLOW_TO_FAILOVER or DISALLOW_TO_FAILOVER
 
@@ -393,7 +392,7 @@ connect_timeout = 10000
 # FAILOVER AND FAILBACK
 #------------------------------------------------------------------------------
 
-failover_command = ''
+failover_command = '{{ pgpool2_failover_command_path }} %d %P %H %R'
                                    # Executes this command at failover
                                    # Special values:
                                    #   %d = node id
@@ -443,7 +442,7 @@ recovery_user = 'postgres'
                                    # Online recovery user
 recovery_password = '{{ postgresql_postgres_password }}'
                                    # Online recovery password
-recovery_1st_stage_command = ''
+recovery_1st_stage_command = '{{ pgpool2_recovery_1st_stage_command_path }}'
                                    # Executes a command in first stage
 recovery_2nd_stage_command = ''
                                    # Executes a command in second stage
