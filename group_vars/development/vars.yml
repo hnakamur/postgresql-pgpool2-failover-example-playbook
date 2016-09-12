@@ -25,3 +25,15 @@ postgresql_replication_user: repl_user
 postgresql_replication_password: "{{ development.secrets.postgresql_replication_password }}"
 postgresql_postgres_ssh_private_key: "{{ development.secrets.postgresql_postgres_ssh_private_key }}"
 postgresql_postgres_ssh_public_key: "{{ development.secrets.postgresql_postgres_ssh_public_key }}"
+
+pgpool2_etc_dir: "/etc/pgpool-II-{{ postgresql_major_minor_version }}"
+pgpool2_run_dir: "/var/run/pgpool-II-{{ postgresql_major_minor_version }}"
+pgpool2_pid_file_name: "{{ pgpool2_run_dir }}/pgpool.pid"
+pgpool2_log_dir: '/var/log/pgpool-II-{{ postgresql_major_minor_version }}'
+pgpool2_admin_user: pgpool2
+pgpool2_admin_password: "{{ development.secrets.pgpool2_admin_password }}"
+pgpool2_health_check_period: 5
+# NOTE: pgpool2_health_check_timeout = 0 means no timeout
+pgpool2_health_check_timeout: 0
+# NOTE: The default value of pgpool2_wd_interval was 10 seconds
+pgpool2_wd_interval: 3

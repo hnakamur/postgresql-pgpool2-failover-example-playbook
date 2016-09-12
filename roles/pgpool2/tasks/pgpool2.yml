@@ -4,3 +4,15 @@
   with_items:
     - pgpool-II-95
     - pgpoolAdmin
+
+- name: Create pgpool-II directories
+  file: path={{ item }} state=directory owner=postgres group=postgres mode=0755
+  with_items:
+    - "{{ pgpool2_run_dir }}"
+    - "{{ pgpool2_log_dir }}"
+
+- name: Create pgpool-II pcp.conf
+  template: src=pcp.conf.j2 dest={{ pgpool2_etc_dir }}/pcp.conf owner=postgres group=postgres mode=0644
+
+- name: Create pgpool-II pgpool.conf
+  template: src=pgpool.conf.j2 dest={{ pgpool2_etc_dir }}/pgpool.conf owner=postgres group=postgres mode=0644

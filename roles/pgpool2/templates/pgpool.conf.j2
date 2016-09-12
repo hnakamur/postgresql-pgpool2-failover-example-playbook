@@ -31,7 +31,7 @@ listen_addresses = 'localhost'
 port = 9999
                                    # Port number
                                    # (change requires restart)
-socket_dir = '/tmp'
+socket_dir = '{{ pgpool2_run_dir }}'
                                    # Unix domain socket path
                                    # The Debian package defaults to
                                    # /var/run/postgresql
@@ -47,7 +47,7 @@ pcp_listen_addresses = '*'
 pcp_port = 9898
                                    # Port number for pcp
                                    # (change requires restart)
-pcp_socket_dir = '/tmp'
+pcp_socket_dir = '{{ pgpool2_run_dir }}'
                                    # Unix domain socket path for pcp
                                    # The Debian package defaults to
                                    # /var/run/postgresql
@@ -62,22 +62,20 @@ serialize_accept = off
 
 # - Backend Connection Settings -
 
-backend_hostname0 = 'host1'
-                                   # Host name or IP address to connect to for backend 0
-backend_port0 = 5432
-                                   # Port number for backend 0
-backend_weight0 = 1
-                                   # Weight for backend 0 (only in load balancing mode)
-backend_data_directory0 = '/data'
-                                   # Data directory for backend 0
-backend_flag0 = 'ALLOW_TO_FAILOVER'
+{% for container in containers %}
+backend_hostname{{ loop.index0 }} = '{{ container.addr_cidr | ipaddr("address") }}'
+                                   # Host name or IP address to connect to for backend {{ loop.index0 }}
+backend_port{{ loop.index0 }} = {{ postgresql_port }}
+                                   # Port number for backend {{ loop.index0 }}
+backend_weight{{ loop.index0 }} = 1
+                                   # Weight for backend {{ loop.index0 }} (only in load balancing mode)
+backend_data_directory{{ loop.index0 }} = '{{ postgresql_data_dira }}'
+                                   # Data directory for backend {{ loop.index0 }}
+backend_flag{{ loop.index0 }} = 'ALLOW_TO_FAILOVER'
                                    # Controls various backend behavior
                                    # ALLOW_TO_FAILOVER or DISALLOW_TO_FAILOVER
-#backend_hostname1 = 'host2'
-#backend_port1 = 5433
-#backend_weight1 = 1
-#backend_data_directory1 = '/data1'
-#backend_flag1 = 'ALLOW_TO_FAILOVER'
+
+{% endfor %}
 
 # - Authentication -
 
@@ -215,10 +213,10 @@ debug_level = 0
 # FILE LOCATIONS
 #------------------------------------------------------------------------------
 
-pid_file_name = '/var/run/pgpool/pgpool.pid'
+pid_file_name = '{{ pgpool2_pid_file_name }}'
                                    # PID file name
                                    # (change requires restart)
-logdir = '/tmp'
+logdir = '{{ pgpool2_log_dir }}'
                                    # Directory of pgPool status file
                                    # (change requires restart)
 
@@ -364,10 +362,10 @@ follow_master_command = ''
 # HEALTH CHECK
 #------------------------------------------------------------------------------
 
-health_check_period = 0
+health_check_period = {{ pgpool2_health_check_period }}
                                    # Health check period
                                    # Disabled (0) by default
-health_check_timeout = 20
+health_check_timeout = {{ pgpool2_health_check_timeout }}
                                    # Health check timeout
                                    # 0 means no timeout
 health_check_user = 'nobody'
@@ -462,7 +460,7 @@ client_idle_limit_in_recovery = 0
 
 # - Enabling -
 
-use_watchdog = off
+use_watchdog = on
                                     # Activates watchdog
                                     # (change requires restart)
 
@@ -479,7 +477,7 @@ ping_path = '/bin'
 
 # - Watchdog communication Settings -
 
-wd_hostname = ''
+wd_hostname = '{{ inventory_hostname_short }}'
                                     # Host name or IP address of this watchdog
                                     # (change requires restart)
 wd_port = 9000
@@ -493,7 +491,7 @@ wd_authkey = ''
                                     # Authentication key for watchdog communication
                                     # (change requires restart)
 
-wd_ipc_socket_dir = '/tmp'
+wd_ipc_socket_dir = '{{ pgpool2_run_dir }}'
 									# Unix domain socket path for watchdog IPC socket
 									# The Debian package defaults to
 									# /var/run/postgresql
@@ -502,7 +500,7 @@ wd_ipc_socket_dir = '/tmp'
 
 # - Virtual IP control Setting -
 
-delegate_IP = ''
+delegate_IP = '{{ postgresql_master_vip }}'
                                     # delegate IP address
                                     # If this is empty, virtual IP never bring up. 
                                     # (change requires restart)
@@ -551,7 +549,7 @@ wd_monitoring_interfaces_list = ''  # Comma separated list of interfaces names t
 wd_lifecheck_method = 'heartbeat'
                                     # Method of watchdog lifecheck ('heartbeat' or 'query' or 'external')
                                     # (change requires restart)
-wd_interval = 10
+wd_interval = {{ pgpool2_wd_interval }}
                                     # lifecheck interval (sec) > 0
                                     # (change requires restart)
 
@@ -566,26 +564,24 @@ wd_heartbeat_keepalive = 2
 wd_heartbeat_deadtime = 30
                                     # Deadtime interval for heartbeat signal (sec)
                                     # (change requires restart)
-heartbeat_destination0 = 'host0_ip1'
+{% for container in containers %}
+heartbeat_destination{{ loop.index0 }} = '{{ container.addr_cidr | ipaddr("address") }}'
                                     # Host name or IP address of destination 0
                                     # for sending heartbeat signal.
                                     # (change requires restart)
-heartbeat_destination_port0 = 9694 
+heartbeat_destination_port{{ loop.index0 }} = 9694 
                                     # Port number of destination 0 for sending
                                     # heartbeat signal. Usually this is the
                                     # same as wd_heartbeat_port.
                                     # (change requires restart)
-heartbeat_device0 = ''
+heartbeat_device{{ loop.index0 }} = ''
                                     # Name of NIC device (such like 'eth0')
                                     # used for sending/receiving heartbeat
                                     # signal to/from destination 0.
                                     # This works only when this is not empty
                                     # and pgpool has root privilege.
                                     # (change requires restart)
-
-#heartbeat_destination1 = 'host0_ip2'
-#heartbeat_destination_port1 = 9694
-#heartbeat_device1 = ''
+{% endfor %}
 
 # -- query mode --
 
