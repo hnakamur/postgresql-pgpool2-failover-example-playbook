@@ -48,6 +48,8 @@ pgpool2_health_check_timeout: 0
 pgpool2_wd_interval: 3
 # NOTE: Set pgpool2_log_statement to "on" only when debugging setup
 pgpool2_log_statement: "on"
-pgpool2_failover_command_path: /usr/local/sbin/failover.sh
-pgpool2_recovery_1st_stage_command_path: /usr/local/sbin/recovery_1st_stage.sh
-pgpool2_pgpool_remote_start_path: /usr/local/sbin/pgpool_remote_start.sh
+# NOTE: 以下の3つのファイルは {{ postgresql_data_dir }} の直下に置きます。
+# 参考: http://www.pgpool.net/docs/latest/pgpool-ja.html#RECOVERY_1ST_STAGE_COMMAND
+pgpool2_failover_command_filename: "failover.sh"
+pgpool2_recovery_1st_stage_command_filename: "recovery_1st_stage.sh"
+pgpool2_pgpool_remote_start_filename: "pgpool_remote_start.sh"

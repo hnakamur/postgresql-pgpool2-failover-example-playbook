@@ -1,12 +1,12 @@
 ---
 - name: Copy failover.sh
-  template: src=failover.sh.j2 dest={{ pgpool2_failover_command_path }} owner=root group=root mode=0755
+  template: src=failover.sh.j2 dest={{ postgresql_data_dir }}/{{ pgpool2_failover_command_filename }} owner=root group=root mode=0755
 
 - name: Copy recovery_1st_stage.sh
-  template: src=recovery_1st_stage.sh.j2 dest={{ pgpool2_recovery_1st_stage_command_path }} owner=root group=root mode=0755
+  template: src=recovery_1st_stage.sh.j2 dest={{ postgresql_data_dir }}/{{ pgpool2_recovery_1st_stage_command_filename }} owner=root group=root mode=0755
 
 - name: Copy pgpool_remote_start.sh
-  template: src=pgpool_remote_start.sh.j2 dest={{ pgpool2_pgpool_remote_start_path }} owner=root group=root mode=0755
+  template: src=pgpool_remote_start.sh.j2 dest={{ postgresql_data_dir }}/{{ pgpool2_pgpool_remote_start_filename }} owner=root group=root mode=0755
 
 - block:
     - name: Check PostgreSQL master database exists

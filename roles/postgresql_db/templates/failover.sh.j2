@@ -1,17 +1,86 @@
-#!/bin/bash -x
-set -eu
-FALLING_NODE=$1         # %d
-OLDPRIMARY_NODE=$2      # %P
-NEW_PRIMARY=$3          # %H
-PGDATA=$4               # %R
+#!/bin/bash
+# Failover command for streming replication.
+# This script assumes that DB node 0 is primary, and 1 is standby.
+#
+# If standby goes down, does nothing. If primary goes down, create a
+# trigger file so that standby take over primary node.
+#
+# Arguments: $1: failed node id. $2: new master hostname. $3: path to
+# trigger file.
 
-if [ $FALLING_NODE = $OLDPRIMARY_NODE ]; then
-    if [ $UID -eq 0 ]
-    then
-        su postgres -c "ssh -T postgres@$NEW_PRIMARY touch $PGDATA/trigger"
-    else
-        ssh -T postgres@$NEW_PRIMARY touch $PGDATA/trigger
-    fi
+set -u
+
+failed_node=$1  # case 'd': /* failed node id */
+new_master=$2   # case 'H': /* new master host name */
+trigger_file=$3
+
+echo failover.sh start failed_node=$1 new_master=$2 trigger_file=$3 UID=$UID | logger -t failover.sh
+
+# Do nothing if standby goes down.
+if [ $failed_node = 1 ]; then
     exit 0;
-fi;
-exit 0;
+fi
+
+ssh_cmd="/bin/ssh -T postgres@$new_master"
+if [ $UID -eq 0 ]; then
+  ssh_cmd="/bin/sudo -u postgres $ssh_cmd"
+fi
+
+$ssh_cmd /bin/touch $trigger_file"
+echo failover.sh ran $ssh_cmd /bin/touch $trigger_file", ret=$? | logger -t failover.sh
+exit 0
+
+#d=$1
+#h=$2
+#p=$3
+#D=$4
+#m=$5
+#H=$6
+#M=$7
+#P=$8
+#r=$9
+#shift
+#R=$9
+
+# NOTE: %dなどの値は src/main/pgpool_main.c の trigger_failover_command で設定しています。
+#failover_command = '{{ pgpool2_failover_command_path }} %d %h %p %D %m %H %M %P %r %R'
+#d=0 h=pgsql1 p=5432 D=/var/lib/pgsql/9.5/data m=1 H=pgsql2 M=0 P=0 r=5432 R=/var/lib/pgsql/9.5/data
+
+# case 'p': /* failed node port */
+# case 'D': /* failed node database directory */
+# case 'd': /* failed node id */
+# case 'h': /* failed host name */
+# case 'H': /* new master host name */
+# case 'm': /* new master node id */
+# case 'r': /* new master port */
+# case 'R': /* new master database directory */
+# case 'M': /* old master node id */
+# case 'P': /* old primary node id */
+
+#echo failover.sh start debug d=$d h=$h p=$p D=$D m=$m H=$H M=$M P=$P r=$r R=$R | logger -t failover.sh
+#echo failover.sh start debug with no arg | logger -t failover.sh
+#FALLING_NODE=$1 OLDPRIMARY_NODE=$2 NEW_PRIMARY=$3 PGDATA=$4 | logger
+
+#while [ $# -gt 0 ]; do
+#  case "$1" in
+#  esac
+#done
+
+#FALLING_NODE=$1         # %d
+#OLDPRIMARY_NODE=$2      # %P
+#NEW_PRIMARY=$3          # %H
+#PGDATA=$4               # %R
+#
+#
+#echo failover.sh start FALLING_NODE=$1 OLDPRIMARY_NODE=$2 NEW_PRIMARY=$3 PGDATA=$4 | logger
+#
+#if [ $FALLING_NODE = $OLDPRIMARY_NODE ]; then
+#    if [ $UID -eq 0 ]
+#    then
+#        su postgres -c "ssh -T postgres@$NEW_PRIMARY touch $PGDATA/trigger"
+#    else
+#        ssh -T postgres@$NEW_PRIMARY touch $PGDATA/trigger
+#    fi
+#    exit 0;
+#fi;
+#exit 0;

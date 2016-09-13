@@ -392,7 +392,10 @@ connect_timeout = 10000
 # FAILOVER AND FAILBACK
 #------------------------------------------------------------------------------
 
-failover_command = '{{ pgpool2_failover_command_path }} %d %P %H %R'
+#failover_command = '{{ pgpool2_failover_command_path }} %d %P %H %R'
+#failover_command = '{{ pgpool2_failover_command_path }} %d %h %p %D %m %H %M %P %r %R'
+failover_command = '{{ postgresql_data_dir }}/{{ pgpool2_failover_command_filename }} %d %H {{ postgresql_data_dir }}/trigger'
+                                   # NOTE: %dなどの値は src/main/pgpool_main.c の trigger_failover_command で設定しています。
                                    # Executes this command at failover
                                    # Special values:
                                    #   %d = node id
@@ -442,8 +445,10 @@ recovery_user = 'postgres'
                                    # Online recovery user
 recovery_password = '{{ postgresql_postgres_password }}'
                                    # Online recovery password
-recovery_1st_stage_command = '{{ pgpool2_recovery_1st_stage_command_path }}'
+recovery_1st_stage_command = '{{ pgpool2_recovery_1st_stage_command_filename }}'
                                    # Executes a command in first stage
+                                   # {{ postgresql_data_dir }} 直下でこのファイル名を探して実行します。
+                                   # 参考: http://www.pgpool.net/docs/latest/pgpool-ja.html#RECOVERY_1ST_STAGE_COMMAND
 recovery_2nd_stage_command = ''
                                    # Executes a command in second stage
 recovery_timeout = 90
@@ -512,16 +517,16 @@ delegate_IP = '{{ postgresql_master_vip }}'
 if_cmd_path = '{{ postgresql_postgres_home_dir }}/sbin'
                                     # path to the directory where if_up/down_cmd exists 
                                     # (change requires restart)
-if_up_cmd = 'ip addr add {{ postgresql_master_vip_cidr }} dev eth0 label eth0:0'
+if_up_cmd = 'ip addr add $_IP_$/{{ postgresql_master_vip_cidr | ipaddr("host/prefix") | ipaddr("prefix")  }} dev eth0 label eth0:0'
                                     # startup delegate IP command
                                     # (change requires restart)
-if_down_cmd = 'ip addr del {{ postgresql_master_vip_cidr }} dev eth0'
+if_down_cmd = 'ip addr del $_IP_$/{{ postgresql_master_vip_cidr | ipaddr("host/prefix") | ipaddr("prefix")  }} dev eth0'
                                     # shutdown delegate IP command
                                     # (change requires restart)
 arping_path = '{{ postgresql_postgres_home_dir }}/sbin'
                                     # arping command path
                                     # (change requires restart)
-arping_cmd = 'arping -U {{ postgresql_master_vip }} -w 1'
+arping_cmd = 'arping -U $_IP_$ -w 1'
                                     # arping command
                                     # (change requires restart)
 

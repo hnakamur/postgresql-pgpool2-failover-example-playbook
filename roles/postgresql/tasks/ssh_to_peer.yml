@@ -24,13 +24,15 @@
 
 - name: Set peer node name and ipaddr
   set_fact:
+    postgresql_self_nodename: "{{ inventory_hostname_short }}"
+    postgresql_self_ipaddr: "{{ (containers | selectattr('name', 'equalto', inventory_hostname_short) | list)[0].addr_cidr | ipaddr('address') }}"
     postgresql_peer_nodename: "{{ (container_names | reject('equalto', inventory_hostname_short) | list)[0] }}"
     postgresql_peer_ipaddr: "{{ (containers | rejectattr('name', 'equalto', inventory_hostname_short) | list)[0].addr_cidr | ipaddr('address') }}"
-    postgresql_self_ipaddr: "{{ (containers | selectattr('name', 'equalto', inventory_hostname_short) | list)[0].addr_cidr | ipaddr('address') }}"
 
 - name: Set peer node ssh public key content
   set_fact:
     postgresql_peer_ssh_pub_key: "{{ lookup('file', 'roles/postgresql/files/ssh_host_ed25519_key-' + postgresql_peer_nodename + '.pub') }}"
+    postgresql_self_ssh_pub_key: "{{ lookup('file', 'roles/postgresql/files/ssh_host_ed25519_key-' + postgresql_self_nodename + '.pub') }}"
 
 - name: Create postgres known_hosts
   blockinfile:
@@ -42,5 +44,5 @@
     mode: 0600
     state: present
     block: |
-      {{ postgresql_master_vip }} {{ postgresql_peer_ssh_pub_key }}
-      {{ postgresql_peer_ipaddr }} {{ postgresql_peer_ssh_pub_key }}
+      {{ postgresql_self_nodename }},{{ postgresql_self_ipaddr }} {{ postgresql_self_ssh_pub_key }}
+      {{ postgresql_peer_nodename }},{{ postgresql_peer_ipaddr }} {{ postgresql_peer_ssh_pub_key }}
