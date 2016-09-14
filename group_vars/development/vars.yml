@@ -46,8 +46,6 @@ pgpool2_health_check_period: 5
 pgpool2_health_check_timeout: 0
 # NOTE: The default value of pgpool2_wd_interval was 10 seconds
 pgpool2_wd_interval: 3
-# NOTE: Set pgpool2_log_statement to "on" only when debugging setup
-pgpool2_log_statement: "on"
 # NOTE: 以下の3つのファイルは {{ postgresql_data_dir }} の直下に置きます。
 # 参考: http://www.pgpool.net/docs/latest/pgpool-ja.html#RECOVERY_1ST_STAGE_COMMAND
 pgpool2_failover_command_filename: "pgpool_failover"
