@@ -11,3 +11,6 @@
     - man
     - file
     - which
+    # NOTE: PostgreSQL YUM depends on EPEL repository
+    # http://yum.postgresql.org/repopackages.php
+    - epel-release
