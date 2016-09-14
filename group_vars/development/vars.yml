@@ -52,3 +52,4 @@ pgpool2_log_statement: "on"
 # 参考: http://www.pgpool.net/docs/latest/pgpool-ja.html#RECOVERY_1ST_STAGE_COMMAND
 pgpool2_failover_command_filename: "pgpool_failover"
 pgpool2_recovery_1st_stage_command_filename: "recovery_1st_stage"
+pgpool2_promote_trigger_filename: "promote_trigger"

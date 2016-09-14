@@ -27,7 +27,7 @@ mv $REMOTE_PGDATA $REMOTE_PGDATA.`date +%Y-%m-%d-%H-%M-%S`
 echo pg_basebackup done. | logger -t recovery_1st_stage
 
 $ssh_cmd "
-rm -f $REMOTE_PGDATA/trigger
+rm -f $REMOTE_PGDATA/{{ pgpool2_promote_trigger_filename }}
 rm -rf $ARCHIVE_DIR/*
 mkdir -p $REMOTE_PGDATA/pg_xlog/archive_status
 "
@@ -44,7 +44,7 @@ cat > recovery.conf << EOT
 standby_mode = 'on'
 primary_conninfo = 'host=$primary_host port=$PORT user={{ postgresql_replication_user }}'
 restore_command = 'scp $primary_host:$ARCHIVE_DIR/%f %p'
-trigger_file = '$REMOTE_PGDATA/trigger'
+trigger_file = '$REMOTE_PGDATA/{{ pgpool2_promote_trigger_filename }}'
 EOT
 "
 echo created recovery.conf. | logger -t recovery_1st_stage
