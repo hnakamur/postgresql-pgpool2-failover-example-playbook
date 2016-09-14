@@ -1,0 +1,38 @@
+#!/bin/bash
+# pgpool_failover
+#
+# Failover command for streming replication.
+# This script assumes that DB node 0 is primary, and 1 is standby.
+#
+# If standby goes down, does nothing. If primary goes down, create a
+# trigger file so that standby take over primary node.
+#
+# Arguments: $1: failed node id. $2: new master hostname. $3: path to
+# trigger file.
+#
+# This script path and argument must be set in the failover_command
+# config in pgpool.conf
+#
+# NOTE: Please refer the following documents about failover.
+#   - http://www.pgpool.net/docs/latest/pgpool-ja.html#failover_in_stream_mode
+#   - http://www.pgpool.net/pgpool-web/contrib_docs/pgpool-II-internal-1.pdf
+set -eu
+echo start args=$* UID=$UID | logger -t pgpool_failover
+
+failed_node=$1  # case 'd': /* failed node id */
+new_master=$2   # case 'H': /* new master host name */
+trigger_file=$3
+
+
+# Do nothing if standby goes down.
+if [ $failed_node = 1 ]; then
+    exit 0;
+fi
+
+ssh_cmd="/bin/ssh -T postgres@$new_master"
+if [ $UID -eq 0 ]; then
+  ssh_cmd="/bin/sudo -u postgres $ssh_cmd"
+fi
+
+$ssh_cmd /bin/touch $trigger_file
+echo created trigger file | logger -t pgpool_failover

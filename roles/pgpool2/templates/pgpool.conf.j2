@@ -392,8 +392,6 @@ connect_timeout = 10000
 # FAILOVER AND FAILBACK
 #------------------------------------------------------------------------------
 
-#failover_command = '{{ pgpool2_failover_command_path }} %d %P %H %R'
-#failover_command = '{{ pgpool2_failover_command_path }} %d %h %p %D %m %H %M %P %r %R'
 failover_command = '{{ postgresql_data_dir }}/{{ pgpool2_failover_command_filename }} %d %H {{ postgresql_data_dir }}/trigger'
                                    # NOTE: %dなどの値は src/main/pgpool_main.c の trigger_failover_command で設定しています。
                                    # Executes this command at failover

@@ -1,13 +1,4 @@
 ---
-- name: Copy failover.sh
-  template: src=failover.sh.j2 dest={{ postgresql_data_dir }}/{{ pgpool2_failover_command_filename }} owner=root group=root mode=0755
-
-- name: Copy recovery_1st_stage.sh
-  template: src=recovery_1st_stage.sh.j2 dest={{ postgresql_data_dir }}/{{ pgpool2_recovery_1st_stage_command_filename }} owner=root group=root mode=0755
-
-- name: Copy pgpool_remote_start.sh
-  template: src=pgpool_remote_start.sh.j2 dest={{ postgresql_data_dir }}/{{ pgpool2_pgpool_remote_start_filename }} owner=root group=root mode=0755
-
 - block:
     - name: Check PostgreSQL master database exists
       stat: path={{ postgresql_data_dir }}/PG_VERSION
@@ -83,6 +74,18 @@
       postgresql_user: name={{ postgresql_replication_user }} password={{ postgresql_replication_password }} role_attr_flags=LOGIN,REPLICATION state=present
       become: true
       become_user: postgres
+      when: not postgresql_master_db_st.stat.exists
+
+    - name: Copy pgpool_failover
+      template: src=pgpool_failover.j2 dest={{ postgresql_data_dir }}/{{ pgpool2_failover_command_filename }} owner=postgres group=postgres mode=0755
+      when: not postgresql_master_db_st.stat.exists
+
+    - name: Copy recovery_1st_stage
+      template: src=recovery_1st_stage.j2 dest={{ postgresql_data_dir }}/{{ pgpool2_recovery_1st_stage_command_filename }} owner=postgres group=postgres mode=0755
+      when: not postgresql_master_db_st.stat.exists
+
+    - name: Copy pgpool_remote_start
+      template: src=pgpool_remote_start.j2 dest={{ postgresql_data_dir }}/pgpool_remote_start owner=postgres group=postgres mode=0755
       when: not postgresql_master_db_st.stat.exists
   run_once: true
   delegate_to: "{{ postgresql_master_nodename }}"

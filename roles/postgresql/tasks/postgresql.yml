@@ -56,8 +56,8 @@
     mode: 0600
     state: present
     block: |
-      {{ postgresql_master_vip }}:{{ postgresql_port }}:*:{{ postgresql_replication_user }}:{{ postgresql_replication_password | regex_replace('([:\\\\])', '\\\\\\1') }}
-      {{ postgresql_peer_ipaddr }}:{{ postgresql_port }}:*:{{ postgresql_replication_user }}:{{ postgresql_replication_password | regex_replace('([:\\\\])', '\\\\\\1') }}
+      *:*:*:{{ postgresql_replication_user }}:{{ postgresql_replication_password | regex_replace('([:\\\\])', '\\\\\\1') }}
+      *:*:*:postgres:{{ postgresql_postgres_password | regex_replace('([:\\\\])', '\\\\\\1') }}
   # NOTE: Use become_user here so that backup file is created with that user
   become: true
   become_user: postgres

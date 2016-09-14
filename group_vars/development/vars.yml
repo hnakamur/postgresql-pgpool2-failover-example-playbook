@@ -50,6 +50,5 @@ pgpool2_wd_interval: 3
 pgpool2_log_statement: "on"
 # NOTE: 以下の3つのファイルは {{ postgresql_data_dir }} の直下に置きます。
 # 参考: http://www.pgpool.net/docs/latest/pgpool-ja.html#RECOVERY_1ST_STAGE_COMMAND
-pgpool2_failover_command_filename: "failover.sh"
-pgpool2_recovery_1st_stage_command_filename: "recovery_1st_stage.sh"
-pgpool2_pgpool_remote_start_filename: "pgpool_remote_start.sh"
+pgpool2_failover_command_filename: "pgpool_failover"
+pgpool2_recovery_1st_stage_command_filename: "recovery_1st_stage"
