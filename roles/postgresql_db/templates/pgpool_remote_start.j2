@@ -11,11 +11,10 @@ echo start args=$* UID=$UID | logger -t pgpool_remote_start
 REMOTE_HOST=$1
 REMOTE_PGDATA=$2
 
-
 ssh_cmd="/bin/ssh -T postgres@$REMOTE_HOST"
 if [ $UID -eq 0 ]; then
   ssh_cmd="/bin/sudo -u postgres $ssh_cmd"
 fi
 
-$ssh_cmd "
-{{ postgresql_bin_dir }}/pg_ctl -w -D $REMOTE_PGDATA start 2>/dev/null 1>/dev/null < /dev/null &"
+$ssh_cmd "sudo /usr/bin/systemctl start postgresql-9.5"
+echo finished to start postgresql-9.5 service | logger -t pgpool_remote_start

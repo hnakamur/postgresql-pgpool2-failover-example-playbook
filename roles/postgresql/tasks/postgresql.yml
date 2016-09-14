@@ -8,6 +8,9 @@
 - name: Do not require tty for root user
   copy: src=sudoers_root dest=/etc/sudoers.d/00_root owner=root group=root mode=0440
 
+- name: Permit postgres user to start postgresql service with systemctl
+  copy: src=sudoers_postgres dest=/etc/sudoers.d/01_postgres owner=root group=root mode=0440
+
 - name: Create directory for download
   file: path={{ postgresql_download_dir }} state=directory
 
