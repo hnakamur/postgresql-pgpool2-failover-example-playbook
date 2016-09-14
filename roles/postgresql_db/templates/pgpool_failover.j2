@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 # pgpool_failover
 #
 # Failover command for streming replication.
@@ -16,13 +16,14 @@
 # NOTE: Please refer the following documents about failover.
 #   - http://www.pgpool.net/docs/latest/pgpool-ja.html#failover_in_stream_mode
 #   - http://www.pgpool.net/pgpool-web/contrib_docs/pgpool-II-internal-1.pdf
+#
+# This script runs on either the primary or standby server by the root user.
 set -eu
 echo start args=$* UID=$UID | logger -t pgpool_failover
 
 failed_node=$1  # case 'd': /* failed node id */
 new_master=$2   # case 'H': /* new master host name */
 trigger_file=$3
-
 
 # Do nothing if standby goes down.
 if [ $failed_node = 1 ]; then

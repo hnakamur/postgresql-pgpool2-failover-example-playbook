@@ -2,7 +2,7 @@
 # pgpool_remote_start
 # NOTE: This script must be placed in the PGDATA directory and the filename must
 #       be "pgpool_remote_start" since it is hardcoded in pgpool source.
-# NOTE: This script always runs on the primary server.
+# NOTE: This script is executed on the primary server by the postgres user.
 # http://www.pgpool.net/docs/latest/pgpool-ja.html#online_recovery_in_stream_mode
 set -eu
 
@@ -12,9 +12,5 @@ REMOTE_HOST=$1
 REMOTE_PGDATA=$2
 
 ssh_cmd="/bin/ssh -T postgres@$REMOTE_HOST"
-if [ $UID -eq 0 ]; then
-  ssh_cmd="/bin/sudo -u postgres $ssh_cmd"
-fi
-
-$ssh_cmd "sudo /usr/bin/systemctl start postgresql-9.5"
-echo finished to start postgresql-9.5 service | logger -t pgpool_remote_start
+$ssh_cmd "sudo /usr/bin/systemctl start postgresql-{{ postgresql_major_dot_minor_version }}"
+echo finished to start postgresql service | logger -t pgpool_remote_start

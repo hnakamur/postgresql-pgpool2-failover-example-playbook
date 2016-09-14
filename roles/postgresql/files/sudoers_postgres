@@ -1,2 +1,0 @@
-Defaults:postgres !requiretty
-postgres ALL=NOPASSWD: /usr/bin/systemctl start postgresql-9.5

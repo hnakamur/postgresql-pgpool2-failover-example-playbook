@@ -1,10 +1,9 @@
-#!/bin/bash -x
+#!/bin/sh
 # recovery_1st_stage
 # NOTE: This script must be placed in the PGDATA directory and the filename must
 #       be the same as the recovery_1st_stage_command in pgpool.conf
-# NOTE: This script always runs on the primary server.
+# NOTE: This script is executed on the primary server by the postgres user.
 # http://www.pgpool.net/docs/latest/pgpool-ja.html#online_recovery_in_stream_mode
-
 set -eu
 
 echo start args=$* UID=$UID | logger -t recovery_1st_stage
@@ -20,13 +19,8 @@ primary_host=`hostname`
 ARCHIVE_DIR={{ postgresql_archive_dir }}
 
 ssh_cmd="/bin/ssh -T postgres@$REMOTE_HOST"
-if [ $UID -eq 0 ]; then
-  ssh_cmd="/bin/sudo -u postgres $ssh_cmd"
-fi
-echo ssh_cmd=$ssm_cmd | logger -t recovery_1st_stage
 
 $ssh_cmd "
-#rm -rf $REMOTE_PGDATA
 mv $REMOTE_PGDATA $REMOTE_PGDATA.`date +%Y-%m-%d-%H-%M-%S`
 {{ postgresql_bin_dir }}/pg_basebackup -h $primary_host -U {{ postgresql_replication_user }} -D $REMOTE_PGDATA -x -c fast
 "
@@ -39,12 +33,10 @@ mkdir -p $REMOTE_PGDATA/pg_xlog/archive_status
 "
 echo created archive_status. | logger -t recovery_1st_stage
 
-#$ssh_cmd "
-#cd $REMOTE_PGDATA
-#cp postgresql.conf postgresql.conf.bak
-#sed -e 's/#*hot_standby = off/hot_standby = on/' postgresql.conf.bak > postgresql.conf
-#rm -f postgresql.conf.bak
-#"
+$ssh_cmd "
+sed -i -e 's/^#? *hot_standby *= *off/hot_standby = on/' $REMOTE_PGDATA/postgresql.conf
+"
+echo enabled hot_standby in postgresql.conf. | logger -t recovery_1st_stage
 
 $ssh_cmd "
 cd $REMOTE_PGDATA
@@ -55,4 +47,4 @@ restore_command = 'scp $primary_host:$ARCHIVE_DIR/%f %p'
 trigger_file = '$REMOTE_PGDATA/trigger'
 EOT
 "
-echo finished created recovery.conf. | logger -t recovery_1st_stage
+echo created recovery.conf. | logger -t recovery_1st_stage
