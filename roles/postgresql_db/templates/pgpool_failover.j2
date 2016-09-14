@@ -27,10 +27,5 @@ if [ $UID -eq 0 ]; then
   ssh_cmd="/bin/sudo -u postgres $ssh_cmd"
 fi
 
-$ssh_cmd "
-sed -i -e 's/^hot_standby *= *on/hot_standby = off/' $new_pgdata/postgresql.conf
-"
-echo disnabled hot_standby in postgresql.conf. | logger -t pgpool_failover
-
 $ssh_cmd /bin/touch $new_pgdata/{{ pgpool2_promote_trigger_filename }}
 echo created {{ pgpool2_promote_trigger_filename }} file | logger -t pgpool_failover

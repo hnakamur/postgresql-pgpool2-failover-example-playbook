@@ -28,7 +28,7 @@
           logging_collector = on
           archive_mode = on
           archive_command = 'cp %p {{ postgresql_archive_dir }}/%f'
-          hot_standby = off
+          hot_standby = on
           hot_standby_feedback = on
           max_replication_slots = 8
           max_standby_streaming_delay = -1
@@ -103,10 +103,6 @@
       command: "{{ postgresql_bin_dir }}/pg_basebackup -h {{ postgresql_peer_ipaddr }} -p {{ postgresql_port }} -U {{ postgresql_replication_user }} -D {{ postgresql_data_dir }} --xlog --checkpoint=fast"
       become: true
       become_user: postgres
-      when: not postgresql_standby_db_st.stat.exists
-
-    - name: Set hotstandby = on in standby postgresql.conf
-      lineinfile: dest={{ postgresql_data_dir }}/postgresql.conf regexp="^#? *hot_standby *=" line="hot_standby = on"
       when: not postgresql_standby_db_st.stat.exists
 
     - name: Create recovery.conf in PostgreSQL standby

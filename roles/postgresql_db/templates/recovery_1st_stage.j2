@@ -28,15 +28,11 @@ echo pg_basebackup done. | logger -t recovery_1st_stage
 
 $ssh_cmd "
 rm -f $REMOTE_PGDATA/{{ pgpool2_promote_trigger_filename }}
+rm -f $REMOTE_PGDATA/recovery.done
 rm -rf $ARCHIVE_DIR/*
 mkdir -p $REMOTE_PGDATA/pg_xlog/archive_status
 "
 echo created archive_status. | logger -t recovery_1st_stage
-
-$ssh_cmd "
-sed -i -e 's/^#? *hot_standby *= *off/hot_standby = on/' $REMOTE_PGDATA/postgresql.conf
-"
-echo enabled hot_standby in postgresql.conf. | logger -t recovery_1st_stage
 
 $ssh_cmd "
 cd $REMOTE_PGDATA
