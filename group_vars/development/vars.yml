@@ -37,7 +37,7 @@ pgpool2_prefix_dir: /usr/pgpool-{{ postgresql_major_dot_minor_version }}
 pgpool2_etc_dir: "/etc/pgpool-II-{{ postgresql_major_minor_version }}"
 pgpool2_run_dir: "/var/run/pgpool-II-{{ postgresql_major_minor_version }}"
 pgpool2_pid_file_name: "{{ pgpool2_run_dir }}/pgpool.pid"
-pgpool2_socket_dir: "{{ postgresql_socket_dir }}"
+pgpool2_socket_dir: "{{ pgpool2_run_dir }}"
 pgpool2_log_dir: '/var/log/pgpool-II-{{ postgresql_major_minor_version }}'
 pgpool2_admin_user: pgpool2
 pgpool2_admin_password: "{{ development.secrets.pgpool2_admin_password }}"
