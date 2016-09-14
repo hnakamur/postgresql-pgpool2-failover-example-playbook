@@ -1,7 +1,4 @@
 ---
-- name: Write /etc/hosts
-  template: src=hosts.j2 dest=/etc/hosts
-
 - name: Install pgpool-II
   yum: name={{ item }} state=present
   with_items:

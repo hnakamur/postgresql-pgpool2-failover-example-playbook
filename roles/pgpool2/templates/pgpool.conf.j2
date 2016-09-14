@@ -63,8 +63,7 @@ serialize_accept = off
 # - Backend Connection Settings -
 
 {% for container in containers %}
-#backend_hostname{{ loop.index0 }} = '{{ container.addr_cidr | ipaddr("address") }}'
-backend_hostname{{ loop.index0 }} = '{{ container.name }}'
+backend_hostname{{ loop.index0 }} = '{{ container.addr_cidr | ipaddr("address") }}'
                                    # Host name or IP address to connect to for backend {{ loop.index0 }}
 backend_port{{ loop.index0 }} = {{ postgresql_port }}
                                    # Port number for backend {{ loop.index0 }}
@@ -484,8 +483,7 @@ ping_path = '/bin'
 
 # - Watchdog communication Settings -
 
-#wd_hostname = '{{ postgresql_self_ipaddr }}'
-wd_hostname = '{{ inventory_hostname_short }}'
+wd_hostname = '{{ postgresql_self_ipaddr }}'
                                     # Host name or IP address of this watchdog
                                     # (change requires restart)
 wd_port = 9000
@@ -515,10 +513,10 @@ delegate_IP = '{{ postgresql_master_vip }}'
 if_cmd_path = '{{ postgresql_postgres_home_dir }}/sbin'
                                     # path to the directory where if_up/down_cmd exists 
                                     # (change requires restart)
-if_up_cmd = 'ip addr add $_IP_$/{{ postgresql_master_vip_cidr | ipaddr("host/prefix") | ipaddr("prefix")  }} dev eth0 label eth0:0'
+if_up_cmd = 'ip addr add $_IP_$/{{ postgresql_master_vip_cidr | ipaddr("host/prefix") | ipaddr("prefix") }} dev eth0 label eth0:0'
                                     # startup delegate IP command
                                     # (change requires restart)
-if_down_cmd = 'ip addr del $_IP_$/{{ postgresql_master_vip_cidr | ipaddr("host/prefix") | ipaddr("prefix")  }} dev eth0'
+if_down_cmd = 'ip addr del $_IP_$/{{ postgresql_master_vip_cidr | ipaddr("host/prefix") | ipaddr("prefix") }} dev eth0'
                                     # shutdown delegate IP command
                                     # (change requires restart)
 arping_path = '{{ postgresql_postgres_home_dir }}/sbin'
@@ -572,8 +570,7 @@ wd_heartbeat_keepalive = 2
 wd_heartbeat_deadtime = 30
                                     # Deadtime interval for heartbeat signal (sec)
                                     # (change requires restart)
-#heartbeat_destination0 = '{{ postgresql_peer_ipaddr }}'
-heartbeat_destination0 = '{{ postgresql_peer_nodename }}'
+heartbeat_destination0 = '{{ postgresql_peer_ipaddr }}'
                                     # Host name or IP address of destination 0
                                     # for sending heartbeat signal.
                                     # (change requires restart)
@@ -610,8 +607,7 @@ wd_lifecheck_password = ''
 
 # - Other pgpool Connection Settings -
 
-#other_pgpool_hostname0 = '{{ postgresql_peer_ipaddr }}'
-other_pgpool_hostname0 = '{{ postgresql_peer_nodename }}'
+other_pgpool_hostname0 = '{{ postgresql_peer_ipaddr }}'
                                     # Host name or IP address to connect to for other pgpool 0
                                     # (change requires restart)
 other_pgpool_port0 = 9999

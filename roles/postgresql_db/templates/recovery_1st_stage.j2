@@ -14,7 +14,18 @@ REMOTE_PGDATA=$3
 PORT=$4
 # NOTE: We assume the port number of PostgreSQL is same across servers.
 
-primary_host=`hostname`
+case $REMOTE_HOST in
+{{ containers[0].addr_cidr | ipaddr('address') }})
+  primary_host={{ containers[1].addr_cidr | ipaddr('address') }}
+  ;;
+{{ containers[1].addr_cidr | ipaddr('address') }})
+  primary_host={{ containers[0].addr_cidr | ipaddr('address') }}
+  ;;
+*)
+  echo exit because of invalid REMOTE_HOST=$REMOTE_HOST | logger -t recovery_1st_stage
+  exit 1
+  ;;
+esac
 
 ARCHIVE_DIR={{ postgresql_archive_dir }}
 
