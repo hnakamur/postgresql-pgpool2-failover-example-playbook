@@ -4,7 +4,6 @@
   with_items:
     - pgpool-II-95
     - pgpool-II-95-extensions
-    - pgpoolAdmin
 
 - name: Create pgpool-II directories
   file: path={{ item }} state=directory owner=postgres group=postgres mode=0755
