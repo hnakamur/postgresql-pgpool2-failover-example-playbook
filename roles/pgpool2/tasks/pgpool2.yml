@@ -24,6 +24,23 @@
 - name: Create pgpool-II pcp.conf
   template: src=pcp.conf.j2 dest={{ pgpool2_etc_dir }}/pcp.conf owner=root group=root mode=0644
 
+- name: Create .pcppass file
+  blockinfile:
+    dest: "{{ postgresql_postgres_home_dir }}/.pcppass"
+    create: true
+    backup: true
+    mode: 0600
+    state: present
+    block: |
+      *:*:{{ pgpool2_admin_user }}:{{ pgpool2_admin_password | regex_replace('([:\\\\])', '\\\\\\1') }}
+    # NOTE: The format for .pcppass is host:port:user:password
+    # http://www.pgpool.net/docs/latest/pgpool-ja.html#password_file
+  # NOTE: Use become_user here so that backup file is created with that user
+  become: true
+  become_user: postgres
+  tags:
+    - pcppass
+
 - name: Create pgpool-II pool_hba.conf
   template: src=pool_hba.conf.j2 dest={{ pgpool2_etc_dir }}/pool_hba.conf owner=root group=root mode=0644
 
